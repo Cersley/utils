@@ -1,0 +1,15 @@
+{
+  "extends": [
+    "airbnb-base",
+  ],
+  "env": {
+    "browser": true,
+    "jest": true
+  },
+  "rules": {
+    "import/prefer-default-export": 0,
+    "no-underscore-dangle": [ 0, { 
+      "enforceInMethodNames": true
+    }],
+  },
+}
