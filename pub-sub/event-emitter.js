@@ -1,38 +1,51 @@
-const subscribesManager = {
-  subscribes: {},
-  call(event, data) {
-    this.subscribes[event].forEach(fn => fn(data));
-  },
-  add(event, cb) {
-    if (this.subscribes[event] === undefined) {
-      this.subscribes[event] = [cb];
+export const createSubscribesManager = () => {
+  let subscribes = {};
+
+  const get = (event) => subscribes[event];
+
+  const call = (event, data) => {
+    subscribes[event].forEach((fn) => fn(data));
+  };
+
+  const add = (event, cb) => {
+    if (subscribes[event] === undefined) {
+      subscribes[event] = [cb];
 
       return;
     }
 
-    this.subscribes[event].push(cb);
-  },
-  remove(event, cb) {
-    if (this.subscribes[event] === undefined) {
+    subscribes[event].push(cb);
+  };
+
+  const remove = (event, cb) => {
+    if (subscribes[event] === undefined) {
       return;
     }
 
-    this.subscribes[event] = this.subscribes[event].filter(fn => fn !== cb);
-  },
+    subscribes[event] = subscribes[event].filter((fn) => fn !== cb);
+  };
+
+  const reset = () => { subscribes = {}; };
+
+  return {
+    get, call, add, remove, reset,
+  };
 };
 
-const on = (event, cb) => {
-  subscribesManager.add(event, cb);
-};
+export const createEventEmitter = (subscribesManager) => {
+  const on = (event, cb) => {
+    subscribesManager.add(event, cb);
+  };
 
-const off = (event, cb) => {
-  subscribesManager.remove(event, cb);
-};
+  const off = (event, cb) => {
+    subscribesManager.remove(event, cb);
+  };
 
-const emit = (event, data) => {
-  subscribesManager.call(event, data);
-};
+  const emit = (event, data) => {
+    subscribesManager.call(event, data);
+  };
 
-export const EventEmitter = {
-  on, off, emit,
+  return {
+    on, off, emit,
+  };
 };
