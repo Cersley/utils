@@ -56,9 +56,17 @@ export class Socket {
     };
 
     this.socket.onclose = (closeEvent) => {
-      if (!closeEvent.wasClean) { // when socket closed unexpectedly
+      if (closeEvent.wasClean === false) { // when socket closed unexpectedly
         this.callSubscribes(SocketEvents.ON_SOCKET_CLOSED);
-        const timer = setInterval(() => {
+        /**
+         * try to reconnect after different time
+         * to prevent server connection overload
+         * when everyone disconnected at the same time
+         *
+         * from 1 to 10 seconds
+         */
+        const randomTime = Math.floor(Math.random() * 10000 + 1);
+        const timer = setTimeout(() => {
           if (this.socket.readyState === Socket.OPEN) {
             clearInterval(timer);
           }
@@ -66,7 +74,7 @@ export class Socket {
           if (this.socket.readyState === Socket.CLOSED) {
             this.init(this.streamUrl);
           }
-        }, 1000);
+        }, randomTime);
       }
     };
 
