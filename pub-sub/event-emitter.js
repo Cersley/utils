@@ -4,6 +4,11 @@ export const createSubscribesManager = () => {
   const get = (event) => subscribes[event];
 
   const call = (event, data) => {
+    if (subscribes[event] === undefined) {
+      console.warn(`[event-emitter] Can't call event. No subscription on ${event} event`);
+      return;
+    }
+
     subscribes[event].forEach((fn) => fn(data));
   };
 
@@ -19,6 +24,7 @@ export const createSubscribesManager = () => {
 
   const remove = (event, cb) => {
     if (subscribes[event] === undefined) {
+      console.warn(`[event-emitter] Can't remove event. No subscription on ${event} event`);
       return;
     }
 

@@ -56,6 +56,16 @@ describe('EventManager', () => {
       EventEmitter.off(eventName);
       expect(SubscribesManager.get(eventName)).toEqual(expect.arrayContaining(expected));
     });
+    it('will not trow error when emit event without any subscribe', () => {
+      const testData = 'test data';
+      const testEvent = 'test';
+      SubscribesManager.call = jest.fn();
+
+      EventEmitter.emit(testEvent, testData);
+
+      expect(SubscribesManager.get(testEvent)).toBeUndefined();
+      expect(SubscribesManager.call).toHaveBeenCalledWith(testEvent, testData);
+    });
     it('should call subscriptions correctly', () => {
       const mockFn = jest.fn(() => 0);
       const mockFn1 = jest.fn(() => 1);
