@@ -11,5 +11,7 @@
     "no-underscore-dangle": [ 0, { 
       "enforceInMethodNames": true
     }],
-  },
+    "max-len": [1, { "code": 120 }],
+    "no-use-before-define": ["error", { "functions": false }]
+  }
 }
