@@ -1,49 +1,13 @@
-export const createSubscribesManager = () => {
-  let subscribes = {};
+import { createSubscribesManager } from './SubscribesManager';
 
-  const get = (event) => subscribes[event];
+export const createEventEmitter = ({ name, logger = console }) => {
+  const subscribesManager = createSubscribesManager({ name, logger });
 
-  const call = (event, data) => {
-    if (subscribes[event] === undefined) {
-      console.warn(`[event-emitter] Can't call event. No subscription on ${event} event`);
-      return;
-    }
-
-    subscribes[event].forEach((fn) => fn(data));
-  };
-
-  const add = (event, cb) => {
-    if (subscribes[event] === undefined) {
-      subscribes[event] = [cb];
-
-      return;
-    }
-
-    subscribes[event].push(cb);
-  };
-
-  const remove = (event, cb) => {
-    if (subscribes[event] === undefined) {
-      console.warn(`[event-emitter] Can't remove event. No subscription on ${event} event`);
-      return;
-    }
-
-    subscribes[event] = subscribes[event].filter((fn) => fn !== cb);
-  };
-
-  const reset = () => { subscribes = {}; };
-
-  return {
-    get, call, add, remove, reset,
-  };
-};
-
-export const createEventEmitter = (subscribesManager) => {
-  const on = (event, cb) => {
+  const subscribe = (event, cb) => {
     subscribesManager.add(event, cb);
   };
 
-  const off = (event, cb) => {
+  const unsubscribe = (event, cb) => {
     subscribesManager.remove(event, cb);
   };
 
@@ -51,7 +15,24 @@ export const createEventEmitter = (subscribesManager) => {
     subscribesManager.call(event, data);
   };
 
+  const once = (event, fn) => {
+    const wrapper = (args) => {
+      fn(args);
+      unsubscribe(event, wrapper);
+    };
+
+    subscribe(event, wrapper);
+  };
+
+  const hasEvent = (event) => subscribesManager.hasEvent(event);
+
   return {
-    on, off, emit,
+    subscribe,
+    unsubscribe,
+    emit,
+    once,
+    hasEvent,
+    // for test
+    subscribesManager,
   };
 };

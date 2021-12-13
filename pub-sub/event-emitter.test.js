@@ -1,94 +1,64 @@
-import { createEventEmitter, createSubscribesManager } from './event-emitter';
+import { createEventEmitter } from './EventEmitter';
 
 describe('EventManager', () => {
-  let SubscribesManager;
   let EventEmitter;
 
   beforeEach(() => {
-    SubscribesManager = createSubscribesManager();
-    EventEmitter = createEventEmitter(SubscribesManager);
+    global.console.warn = jest.fn();
+    EventEmitter = createEventEmitter({ name: 'TestEventEmitter' });
   });
 
   afterEach(() => {
-    SubscribesManager.reset();
+    jest.clearAllMocks();
   });
 
-  describe('subscriptions', () => {
-    it('should add new subscription', () => {
-      const fn = () => {};
-      const eventName = 'test';
-      const expected = [fn];
+  it('should create new SubscribesManager when creating EventEmitter', () => {
+    expect(EventEmitter.subscribesManager.name).toBe('TestEventEmitter');
+  });
 
-      EventEmitter.on(eventName, fn);
+  it('should call `add` method of SubscribesManager when adding new subscription', () => {
+    const fn = () => {};
+    const eventName = 'test';
+    const spy = jest.spyOn(EventEmitter.subscribesManager, 'add');
 
-      expect(SubscribesManager.get(eventName)).toEqual(expect.arrayContaining(expected));
-    });
-    it('should delete correct subscription', () => {
-      const fn = () => {};
-      const fn1 = () => {};
-      const eventName = 'test';
-      const expected = [fn1];
-      EventEmitter.on(eventName, fn);
-      EventEmitter.on(eventName, fn1);
+    EventEmitter.subscribe(eventName, fn);
 
-      EventEmitter.off(eventName, fn);
-      expect(SubscribesManager.get(eventName)).toEqual(expect.arrayContaining(expected));
-    });
-    it('will not delete anything without subscription event', () => {
-      const fn = () => {};
-      const fn1 = () => {};
-      const eventName = 'test';
-      const expected = [fn, fn1];
-      EventEmitter.on(eventName, fn);
-      EventEmitter.on(eventName, fn1);
+    expect(spy).toHaveBeenCalledWith(eventName, fn);
+  });
 
-      EventEmitter.off();
-      expect(SubscribesManager.get(eventName)).toEqual(expect.arrayContaining(expected));
-    });
-    it('will not delete anything without subscription cb', () => {
-      const fn = () => {};
-      const fn1 = () => {};
-      const eventName = 'test';
-      const expected = [fn, fn1];
-      EventEmitter.on(eventName, fn);
-      EventEmitter.on(eventName, fn1);
+  it('should call `hasEvent` method of SubscribesManager when checking if event exists', () => {
+    const eventName = 'test';
+    const spy = jest.spyOn(EventEmitter.subscribesManager, 'hasEvent');
 
-      EventEmitter.off(eventName);
-      expect(SubscribesManager.get(eventName)).toEqual(expect.arrayContaining(expected));
-    });
-    it('will not trow error when emit event without any subscribe', () => {
-      const testData = 'test data';
-      const testEvent = 'test';
-      SubscribesManager.call = jest.fn();
+    EventEmitter.hasEvent(eventName);
 
-      EventEmitter.emit(testEvent, testData);
+    expect(spy).toHaveBeenCalledWith(eventName);
+  });
 
-      expect(SubscribesManager.get(testEvent)).toBeUndefined();
-      expect(SubscribesManager.call).toHaveBeenCalledWith(testEvent, testData);
-    });
-    it('should call subscriptions correctly', () => {
-      const mockFn = jest.fn(() => 0);
-      const mockFn1 = jest.fn(() => 1);
-      const mockFn2 = jest.fn(() => 2);
-      EventEmitter.on('test', mockFn);
-      EventEmitter.on('test', mockFn1);
-      EventEmitter.on('test1', mockFn1);
-      EventEmitter.on('test1', mockFn2);
+  it('should call `call` method of SubscribesManager when emitting event', () => {
+    const eventName = 'test';
+    const eventData = { test: 'test' };
+    const spy = jest.spyOn(EventEmitter.subscribesManager, 'call');
 
-      EventEmitter.emit('test');
-      expect(mockFn.mock.calls.length).toBe(1);
-      expect(mockFn1.mock.calls.length).toBe(1);
-      expect(mockFn2.mock.calls.length).toBe(0);
+    EventEmitter.emit(eventName, eventData);
+    expect(spy).toHaveBeenCalledWith(eventName, eventData);
+  });
 
-      EventEmitter.emit('test');
-      expect(mockFn.mock.calls.length).toBe(2);
-      expect(mockFn1.mock.calls.length).toBe(2);
-      expect(mockFn2.mock.calls.length).toBe(0);
+  it('should call `remove` method of SubscribesManager when unsubscribing from event', () => {
+    const fn = () => {};
+    const eventName = 'test';
+    const spy = jest.spyOn(EventEmitter.subscribesManager, 'remove');
 
-      EventEmitter.emit('test1');
-      expect(mockFn.mock.calls.length).toBe(2);
-      expect(mockFn1.mock.calls.length).toBe(3);
-      expect(mockFn2.mock.calls.length).toBe(1);
-    });
+    EventEmitter.unsubscribe(eventName, fn);
+    expect(spy).toHaveBeenCalledWith(eventName, fn);
+  });
+
+  it('should remove event when using method `once`', () => {
+    const fn = () => {};
+    const eventName = 'test';
+    EventEmitter.once(eventName, fn);
+    EventEmitter.emit(eventName, 'data');
+
+    expect(EventEmitter.hasEvent(eventName)).toBeFalsy();
   });
 });
