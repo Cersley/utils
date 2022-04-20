@@ -22,7 +22,7 @@ const round = (amount, exponent, direction) => {
    * - in math: 101*0.15=15.15
    *
    * to fix this problem make toPrecision of fractional part
-   * (more then exponent by 1 in 'out' case to save banking rounding logic)
+   * (more then exponent by 1 in 'out' case to save bankers rounding logic)
    * and merge that value with decimal part as string
    */
   if (direction === 'out') {
@@ -32,7 +32,7 @@ const round = (amount, exponent, direction) => {
     const fractionalPartWithRightPrecision = parseFloat(`0.${clearedFractionalPart}`)
       .toPrecision(precision)
       .split('.')[1];
-    // делаем округление в минус(банковское) обрезая по значению exponent
+    // trim by exponent value
     return `${parseInt(decimalPart, 10)}.${fractionalPartWithRightPrecision.substring(0, exponent)}`;
   }
 
