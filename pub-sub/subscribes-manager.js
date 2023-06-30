@@ -1,3 +1,16 @@
+/**
+ * @typedef {object} SubscriptionsManager
+ * @property {function(string, object):void} call
+ * @property {function(string, function):void} add
+ * @property {function(string, function):void} remove
+ * @property {function} reset - delete all subscriptions
+ * @property {function(string):boolean} hasEvent - check if such event is exists
+ *
+ * @param {object} config
+ * @param {string} config.name - subscribes manager name
+ * @param {Object} [config.logger] - custom logger (default: console)
+ * @returns {SubscriptionsManager}
+ */
 export const createSubscribesManager = ({ name = 'Default', logger = console }) => {
   let subscribes = {};
 

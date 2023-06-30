@@ -1,4 +1,4 @@
-import { createEventEmitter } from './EventEmitter';
+import { createEventEmitter } from './event-emitter';
 
 describe('EventManager', () => {
   let EventEmitter;
